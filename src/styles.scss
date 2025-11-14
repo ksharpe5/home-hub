@@ -38,15 +38,18 @@ body {
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+// Everything above here is Angular Material
+
 mat-sidenav-content {
   margin-left: 100px !important;
 }
 mat-sidenav {
   @include mat.sidenav-overrides(
-        (
-          container-width: 100px,
-          //container-background-color: red,
-          container-shape: 0,
-        )
+      (
+        container-width: 100px,
+        //container-background-color: red,
+        container-shape: 0,
+      )
   )
 }
+// Everything above here is Angular Material overrides

@@ -15,14 +15,16 @@ import { RouterOutlet } from '@angular/router';
     RouterOutlet
 ],
   template: `
-    <mat-sidenav-container class="w-full h-full">
+    <mat-sidenav-container class="h-screen w-screen overflow-hidden">
       <mat-sidenav mode="side" opened>
-        <app-sidebar/>
+        <app-sidebar />
       </mat-sidenav>
-      <mat-sidenav-content>
-        <app-header/>
-        <div class="p-4">
-          <router-outlet/>
+
+      <mat-sidenav-content class="flex flex-col h-full overflow-hidden">
+        <app-header class="sticky top-0 z-10" />
+
+        <div class="flex-1 overflow-auto p-4">
+          <router-outlet />
         </div>
       </mat-sidenav-content>
     </mat-sidenav-container>
