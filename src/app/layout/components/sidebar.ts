@@ -27,12 +27,12 @@ export class Sidebar {
     {
       name: 'Dashboard',
       icon: 'dashboard',
-      route: 'dashboard',
+      route: '/dashboard',
     },
     {
       name: 'Calendar',
       icon: 'calendar_month',
-      route: 'calendar',
+      route: '/calendar',
     },
     {
       name: 'Inventory',

@@ -23,7 +23,7 @@ import { RouterOutlet } from '@angular/router';
       <mat-sidenav-content class="flex flex-col h-full overflow-hidden">
         <app-header class="sticky top-0 z-10" />
 
-        <div class="flex-1 overflow-auto p-4">
+        <div class="flex-1 overflow-auto px-4">
           <router-outlet />
         </div>
       </mat-sidenav-content>
