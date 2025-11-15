@@ -1,6 +1,6 @@
 export type CalendarEvent = {
   name: string,
-  time: number,
-  duration: number,
-  description: string
+  startTime?: Date,
+  endTime?: Date,
+  description?: string
 }

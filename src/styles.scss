@@ -41,16 +41,26 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 // Everything above here is Angular Material
 
 mat-sidenav-content {
-  margin-left: 100px !important;
   display: flex !important;
 }
-mat-sidenav {
-  @include mat.sidenav-overrides(
-      (
-        container-width: 100px,
-        //container-background-color: red,
-        container-shape: 0,
-      )
-  )
-}
+
 // Everything above here is Angular Material overrides
+
+
+// Custom Animations
+@layer utilities {
+  @keyframes slide-fade-in {
+    0% {
+      transform: translateX(-30px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-fade-in {
+    animation: slide-fade-in 0.5s ease-out forwards;
+  }
+}

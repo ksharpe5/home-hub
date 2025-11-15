@@ -16,12 +16,12 @@ import { RouterOutlet } from '@angular/router';
 ],
   template: `
     <mat-sidenav-container class="h-screen w-screen overflow-hidden">
-      <mat-sidenav mode="side" opened>
+      <mat-sidenav [style.width.px]="90" mode="side" opened #nav>
         <app-sidebar />
       </mat-sidenav>
 
       <mat-sidenav-content class="flex flex-col h-full overflow-hidden">
-        <app-header />
+        <app-header (menuClicked)="nav.toggle()" />
 
         <div class="grow overflow-auto px-4">
           <router-outlet />
