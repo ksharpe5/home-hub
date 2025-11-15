@@ -21,9 +21,9 @@ import { RouterOutlet } from '@angular/router';
       </mat-sidenav>
 
       <mat-sidenav-content class="flex flex-col h-full overflow-hidden">
-        <app-header class="sticky top-0 z-10" />
+        <app-header />
 
-        <div class="flex-1 overflow-auto px-4">
+        <div class="grow overflow-auto px-4">
           <router-outlet />
         </div>
       </mat-sidenav-content>

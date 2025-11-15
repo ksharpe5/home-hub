@@ -3,8 +3,8 @@ import {MatToolbar} from '@angular/material/toolbar';
 import {MatButtonToggle, MatButtonToggleGroup} from '@angular/material/button-toggle';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
-import {CalendarWeek} from './calendar-week';
-import {CalendarMonth} from './calendar-month';
+import {CalendarWeek} from '../components/calendar-week';
+import {CalendarMonth} from '../components/calendar-month';
 import {CalendarControls} from '../components/calendar-controls';
 import {CalendarDate} from '../models/calendar-date';
 import {CalendarEvent} from '../models/calendar-event';
@@ -81,8 +81,6 @@ export default class Calendar {
         { name: 'Take bins out', time: 9, duration: 5, description: '' },
         { name: 'Dinner at Troon', time: 17, duration: 90, description: 'At the Lido in Troon' },
         { name: 'Nap Time', time: 20, duration: 45, description: 'On the couch' },
-        { name: 'Nap Time', time: 20, duration: 45, description: 'On the couch' },
-        { name: 'Nap Time', time: 20, duration: 45, description: 'On the couch' }
       ];
 
       days.push({
