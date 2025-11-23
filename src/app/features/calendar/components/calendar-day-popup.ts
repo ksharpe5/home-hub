@@ -13,7 +13,7 @@ import {DatePipe} from '@angular/common';
 import {CalendarEventListItem} from './calendar-event-list-item';
 
 @Component({
-  selector: 'app-calendar-event-add-popup',
+  selector: 'app-calendar-day-popup',
   imports: [
     MatDialogTitle,
     MatDialogContent,
@@ -22,25 +22,25 @@ import {CalendarEventListItem} from './calendar-event-list-item';
     MatDialogClose,
     FormsModule,
     DatePipe,
-    CalendarEventListItem
+    CalendarEventListItem,
   ],
   template: `
     <h2 mat-dialog-title>{{ day?.date | date:'EEEE, LLLL d' }}</h2>
     <mat-dialog-content>
-      <div class="w-full h-full flex flex-col gap-2">
-        @for (event of day?.events; track $index) {
-            <app-calendar-event-list-item [event]="event"/>
+      <div class="flex flex-col gap-4">
+        @for (item of day?.events; track item.id) {
+          <app-calendar-event-list-item [event]="item"/>
         }
       </div>
+
     </mat-dialog-content>
     <mat-dialog-actions>
-      <button matButton>No Thanks</button>
-      <button matButton [mat-dialog-close]="close()">Ok</button>
+      <button matButton [mat-dialog-close]="close()">Close</button>
     </mat-dialog-actions>
   `,
   styles: ``,
 })
-export class CalendarEventAddPopup {
+export class CalendarDayPopup {
   day: CalendarDate | undefined = inject(MAT_DIALOG_DATA);
 
   close(): any {

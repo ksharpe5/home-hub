@@ -65,10 +65,16 @@ export default class Calendar {
       const endTime = this.randomTime(date);
 
       const events: CalendarEvent[] = [
-        { name: 'Take bins out', startTime: startTime, endTime: endTime, description: '' },
-        { name: 'Dinner at Troon', startTime: startTime, endTime: endTime, description: 'At the Lido in Troon' },
-        { name: 'Nap Time', startTime: startTime, endTime: endTime, description: 'On the couch' },
-        { name: 'Take bins out', startTime: startTime, endTime: endTime, description: '' },
+        {
+          id: 0,
+          name: 'Take bins out',
+          description: 'This should be some information about the event itself, it can be quite long text',
+          startTime: startTime,
+          endTime: endTime,
+          attendees: ['Kiwi', 'Jojo'],
+          travelTime: 25,
+          location: 'Kilmarnock'
+        }
       ];
 
       days.push({

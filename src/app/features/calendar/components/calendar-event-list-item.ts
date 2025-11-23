@@ -1,49 +1,54 @@
-import {Component, input} from '@angular/core';
+import {Component, inject, input} from '@angular/core';
 import {CalendarEvent} from '../models/calendar-event';
 import {DatePipe} from '@angular/common';
-import {MatIconButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
+import {MatBottomSheet, MatBottomSheetModule} from '@angular/material/bottom-sheet';
+import {CalendarBottomSheet} from './calendar-bottom-sheet';
 
 @Component({
   selector: 'app-calendar-event-list-item',
   imports: [
     DatePipe,
-    MatIconButton,
-    MatIcon
+    MatBottomSheetModule
   ],
   template: `
-    <div class="border border-black p-4 flex flex-col gap-2 rounded-2xl w-100">
+    <div class="bg-red-100 rounded-2xl p-4 flex flex-col gap-2" (click)="openDeleteSheet()">
       <div class="flex justify-between">
-        <div class="flex gap-4 items-center">
-          <h1 class="font-bold text-lg">{{ event().name }}</h1>
+        <h1 class="font-bold">{{ event().name }}</h1>
+        <div class="text-sm font-light">
           @if (event().startTime) {
-            <div class="flex font-light">
-              <span>
-                {{ event().startTime | date:'hh:mm' }}
-              </span>
-              @if (event().endTime) {
-                <span> - {{ event().endTime | date:'hh:mm' }}</span>
+            <span>{{ event().startTime | date:'hh:mm' }}</span>
+          }
+          @if (event().endTime) {
+            <span> - {{ event().endTime | date:'hh:mm' }}</span>
+          }
+        </div>
+      </div>
+      <div class="flex justify-between">
+        <span>{{ event().attendees?.join(', ') }}</span>
+        <div class="text-sm font-light">
+          @if (event().location) {
+            <div class="flex gap-1">
+              <span>{{ event().location }}</span>
+              @if (event().travelTime) {
+                <span>- {{ event().travelTime }} mins</span>
               }
             </div>
           }
         </div>
-        <div class="flex gap-1">
-          <button matIconButton>
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button matIconButton>
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>
       </div>
-      @if (event().description) {
-        <span>{{ event().description }}</span>
-      }
-
+      <p>{{ event().description }}</p>
     </div>
   `,
   styles: ``,
 })
 export class CalendarEventListItem {
   event = input.required<CalendarEvent>()
+  bottomSheet = inject(MatBottomSheet);
+
+  openDeleteSheet() {
+    const sheetRef = this.bottomSheet.open(CalendarBottomSheet, { autoFocus: false });
+    sheetRef.afterDismissed().subscribe(res => {
+      console.log(res);
+    });
+  }
 }
