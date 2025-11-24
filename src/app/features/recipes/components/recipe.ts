@@ -3,12 +3,14 @@ import { Recipe as RecipeModel } from '../models/recipe';
 import {MatIconModule} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
 import {MatDrawer} from '@angular/material/sidenav';
+import {UnitPipe} from '../../../shared/pipes/unit';
 
 @Component({
   selector: 'app-recipe',
   imports: [
     MatIconModule,
-    MatIconButton
+    MatIconButton,
+    UnitPipe
   ],
   template: `
     <div class="flex flex-col gap-2 p-4">
@@ -37,7 +39,7 @@ import {MatDrawer} from '@angular/material/sidenav';
           <h2 class="font-bold mb-2">Instructions</h2>
           <ol class="list-decimal space-y-1">
             @for (instruction of recipe().instructions; track $index) {
-              <li>{{ instruction }}</li>
+              <li>{{ instruction.text }}</li>
             }
           </ol>
         </div>
@@ -47,7 +49,7 @@ import {MatDrawer} from '@angular/material/sidenav';
           <h2 class="font-bold mb-2">Ingredients</h2>
           <ul class="space-y-1">
             @for (ingredient of recipe().ingredients; track $index) {
-              <li>{{ ingredient.quantity }}{{ ingredient.unit }} {{ ingredient.name }}</li>
+              <li>{{ ingredient.quantity }}{{ ingredient.unit | unit }} {{ ingredient.name }}</li>
             }
           </ul>
         </div>

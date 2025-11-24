@@ -1,5 +1,6 @@
 import {RecipeType} from './recipe-type';
 import {Ingredient} from '../../../shared/models/ingredient';
+import {Instruction} from './instruction';
 
 export type Recipe = {
   id: number,
@@ -11,5 +12,5 @@ export type Recipe = {
   effortRating: number,
   healthyRating: number,
   ingredients: Ingredient[],
-  instructions: string[]
+  instructions: Instruction[],
 }

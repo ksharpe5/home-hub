@@ -6,9 +6,8 @@ import {DataTable} from '../../../shared/components/data-table';
 import {ColumnDefinition, ColumnDefinitionMap, ColumnDefinitionType} from '../../../shared/models/column-definition';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {Recipe} from '../components/recipe';
-import {MatIconButton} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
 import {RecipeForm} from '../components/recipe-form';
+import {Unit} from '../../../shared/models/unit';
 
 @Component({
   selector: 'app-recipes',
@@ -70,41 +69,15 @@ export default class Recipes {
       tasteRating: 5,
       serves: 3,
       instructions: [
-        "Chop Chicken",
-        "Add Rice",
-        "Add Stock",
-        "Cook the stuff",
-        "Nom the stuff",
-        "Chop Chicken",
-        "Add Rice",
-        "Add Stock",
-        "Cook the stuff",
-        "Nom the stuff",
-        "Chop Chicken",
-        "Add Rice",
-        "Add Stock",
-        "Cook the stuff",
-        "Nom the stuff",
-        "Chop Chicken",
-        "Add Rice",
-        "Add Stock",
-        "Cook the stuff",
-        "Nom the stuff",
-        "Chop Chicken",
-        "Add Rice",
-        "Add Stock",
-        "Cook the stuff",
-        "Nom the stuff",
-        "Chop Chicken",
-        "Add Rice",
-        "Add Stock",
-        "Cook the stuff",
-        "Nom the stuff"
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
       ],
       ingredients: [
-        { id: 0, name: "Chicken", quantity: 200, unit: "g" },
-        { id: 0, name: "Chorizo", quantity: 100, unit: "g" },
-        { id: 0, name: "Paella Rice", quantity: 350, unit: "g" },
+        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
+        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
+        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
       ]
     },
     {
@@ -117,16 +90,15 @@ export default class Recipes {
       tasteRating: 2,
       serves: 2,
       instructions: [
-        "Chop Chicken",
-        "Add Rice",
-        "Add Stock",
-        "Cook the stuff",
-        "Nom the stuff"
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
       ],
       ingredients: [
-        { id: 0, name: "Chicken", quantity: 200, unit: "g" },
-        { id: 0, name: "Chorizo", quantity: 100, unit: "g" },
-        { id: 0, name: "Paella Rice", quantity: 350, unit: "g" },
+        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
+        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
+        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
       ]
     }
   ];

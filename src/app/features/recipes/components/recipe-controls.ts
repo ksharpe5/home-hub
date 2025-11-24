@@ -21,7 +21,7 @@ import {FormsModule} from '@angular/forms';
     <div class="w-full">
       <div class="flex flex-col gap-1">
         <div class="flex gap-4 items-center pt-2 justify-center">
-          <mat-form-field appearance="outline" class="compact-field w-130">
+          <mat-form-field class="compact-field w-130">
             <mat-label>Recipe Search</mat-label>
             <input #search
                    matInput
