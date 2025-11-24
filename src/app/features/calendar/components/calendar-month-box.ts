@@ -10,7 +10,7 @@ import {CalendarDayPopup} from './calendar-day-popup';
     NgClass
   ],
   template: `
-    <div class="flex flex-col h-full p-1" (click)="clicked()">
+    <div class="flex flex-col h-full p-1" (click)="openEvents()">
       <span
         class="self-end w-6 h-6 flex items-center justify-center text-sm mb-1"
         [ngClass]="{ 'bg-red-500 text-white rounded-full': day()?.isToday }"
@@ -31,8 +31,9 @@ export class CalendarMonthBox {
 
   private readonly dialog = inject(MatDialog);
 
-  clicked(): void {
-    console.log(this.day());
+  openEvents(): void {
+    if (this.day() === undefined) return;
+
     this.dialog.open(CalendarDayPopup, { data: this.day() });
   }
 }

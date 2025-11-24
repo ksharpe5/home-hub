@@ -27,23 +27,22 @@ import {CalendarEventListItem} from './calendar-event-list-item';
   template: `
     <h2 mat-dialog-title>{{ day?.date | date:'EEEE, LLLL d' }}</h2>
     <mat-dialog-content>
-      <div class="flex flex-col gap-4">
-        @for (item of day?.events; track item.id) {
-          <app-calendar-event-list-item [event]="item"/>
-        }
-      </div>
-
+      @if ((day?.events?.length ?? 0) > 0) {
+        <div class="flex flex-col gap-4">
+          @for (item of day?.events; track item.id) {
+            <app-calendar-event-list-item [event]="item"/>
+          }
+        </div>
+      } @else {
+       <p>No events today</p>
+      }
     </mat-dialog-content>
     <mat-dialog-actions>
-      <button matButton [mat-dialog-close]="close()">Close</button>
+      <button matButton matDialogClose>Close</button>
     </mat-dialog-actions>
   `,
   styles: ``,
 })
 export class CalendarDayPopup {
   day: CalendarDate | undefined = inject(MAT_DIALOG_DATA);
-
-  close(): any {
-
-  }
 }

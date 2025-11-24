@@ -7,7 +7,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
 import {RangePipe} from '../../../shared/pipes/range';
-import {MatIconButton} from '@angular/material/button';
+import {MatButtonModule, MatIconButton} from '@angular/material/button';
 import {Ingredient} from '../../../shared/models/ingredient';
 import {MatChipsModule} from '@angular/material/chips';
 import {FormsModule} from '@angular/forms';
@@ -29,10 +29,13 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
     MatChipsModule,
     FormsModule,
     RecipeFormChip,
-    IngredientTextPipe
+    IngredientTextPipe,
+    MatButtonModule
   ],
   template: `
     <div class="max-h-full overflow-auto">
+
+      <button matButton (click)="addRecipe()">Create Recipe</button>
 
       <h1 class="mb-2 text-lg font-bold">Recipe Info</h1>
       <section class="grid grid-cols-3 gap-2 p-2">
@@ -223,4 +226,7 @@ export class RecipeForm {
     );
   }
 
+  addRecipe() {
+    console.log(this.recipeForm, this.ingredients(), this.instructions());
+  }
 }

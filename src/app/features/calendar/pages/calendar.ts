@@ -6,6 +6,8 @@ import {CalendarMonth} from '../components/calendar-month';
 import {CalendarControls} from '../components/calendar-controls';
 import {CalendarDate} from '../models/calendar-date';
 import {CalendarEvent} from '../models/calendar-event';
+import {MatDrawer, MatSidenavModule} from '@angular/material/sidenav';
+import {CalendarEventForm} from '../components/calendar-event-form';
 
 @Component({
   selector: 'app-calendar',
@@ -14,23 +16,37 @@ import {CalendarEvent} from '../models/calendar-event';
     MatIcon,
     MatMiniFabButton,
     CalendarMonth,
-    CalendarControls
+    CalendarControls,
+    MatSidenavModule,
+    CalendarEventForm
   ],
   template: `
-      <mat-toolbar class="flex justify-between">
-        <app-calendar-controls
-          [date]="generationDate()"
-          (previousClicked)="previousClicked()"
-          (nextClicked)="nextClicked()"
-          (todayClicked)="todayClicked()"
-        />
+    <mat-drawer-container class="h-full" autosize>
+      <mat-drawer
+        #formDrawer
+        mode="over"
+        position="start"
+        class="!w-9/12"
+      >
+        <app-calendar-event-form/>
+      </mat-drawer>
+      <mat-drawer-content>
+        <mat-toolbar class="flex justify-between">
+          <app-calendar-controls
+            [date]="generationDate()"
+            (previousClicked)="previousClicked()"
+            (nextClicked)="nextClicked()"
+            (todayClicked)="todayClicked()"
+          />
 
-        <button matMiniFab (click)="addEventClicked()">
-          <mat-icon>add</mat-icon>
-        </button>
-      </mat-toolbar>
+          <button matMiniFab (click)="addEvent(formDrawer)">
+            <mat-icon>add</mat-icon>
+          </button>
+        </mat-toolbar>
+        <app-calendar-month [generatedCalendar]="generatedCalendar()" [daysInWeek]="daysInWeek"/>
+      </mat-drawer-content>
+    </mat-drawer-container>
 
-      <app-calendar-month [generatedCalendar]="generatedCalendar()" [daysInWeek]="daysInWeek" />
   `,
   styles: ``,
 })
@@ -97,8 +113,8 @@ export default class Calendar {
     return days;
   });
 
-  addEventClicked(): void {
-
+  addEvent(drawer: MatDrawer): void {
+    drawer.open().then();
   }
 
   previousClicked(): void {

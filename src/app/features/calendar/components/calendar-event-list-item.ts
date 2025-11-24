@@ -13,7 +13,7 @@ import {CalendarBottomSheet} from './calendar-bottom-sheet';
   template: `
     <div class="bg-red-100 rounded-2xl p-4 flex flex-col gap-2" (click)="openDeleteSheet()">
       <div class="flex justify-between">
-        <h1 class="font-bold">{{ event().name }}</h1>
+        <span class="font-bold text-lg">{{ event().name }}</span>
         <div class="text-sm font-light">
           @if (event().startTime) {
             <span>{{ event().startTime | date:'hh:mm' }}</span>
