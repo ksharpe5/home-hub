@@ -1,7 +1,5 @@
-import {Component, signal} from '@angular/core';
-import {Recipe} from '../models/recipe';
+import {Component, input, signal} from '@angular/core';
 import {RecipeType} from '../models/recipe-type';
-import {Field, form} from '@angular/forms/signals';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
@@ -15,6 +13,7 @@ import {Unit} from '../../../shared/models/unit';
 import {Instruction} from '../models/instruction';
 import {RecipeFormChip} from './recipe-form-chip';
 import {IngredientTextPipe} from '../pipes/ingredient-text';
+import {MatDrawer} from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-recipe-form',
@@ -24,7 +23,6 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
     MatIconModule,
     MatSelectModule,
     RangePipe,
-    Field,
     MatIconButton,
     MatChipsModule,
     FormsModule,
@@ -33,20 +31,25 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
     MatButtonModule
   ],
   template: `
-    <div class="max-h-full overflow-auto">
+    <div class="max-h-full overflow-auto flex flex-col">
 
-      <button matButton (click)="addRecipe()">Create Recipe</button>
+      <div class="flex justify-between">
+        <h1 class="mb-2 text-lg font-bold">Recipe Info</h1>
 
-      <h1 class="mb-2 text-lg font-bold">Recipe Info</h1>
+        <button matIconButton class="m-2" (click)="drawer().close()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
       <section class="grid grid-cols-3 gap-2 p-2">
         <mat-form-field class="col-span-3">
           <mat-label>Name</mat-label>
-          <input matInput type="text" placeholder="Name..." [field]="recipeForm.name">
+          <input matInput type="text" placeholder="Name..." [(ngModel)]="recipeName">
         </mat-form-field>
 
         <mat-form-field class="col-span-1">
           <mat-label>Type</mat-label>
-          <mat-select [field]="recipeForm.type">
+          <mat-select [(ngModel)]="recipeType">
             @for (type of recipeTypes; track type) {
               <mat-option [value]="type">{{ RecipeType[type] }}</mat-option>
             }
@@ -55,17 +58,24 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
 
         <mat-form-field class="col-span-1">
           <mat-label>Serves</mat-label>
-          <input matInput type="number" placeholder="How many does it serve..." [field]="recipeForm.serves">
+          <input matInput type="number" placeholder="How many does it serve..." [(ngModel)]="serves">
         </mat-form-field>
 
         <mat-form-field class="col-span-1">
           <mat-label>Duration (minutes)</mat-label>
-          <input matInput type="number" placeholder="How long does it take..." [field]="recipeForm.duration">
+          <input matInput type="number" placeholder="How long does it take..." [(ngModel)]="duration">
         </mat-form-field>
 
         <mat-form-field class="col-span-1">
           <mat-label>Taste Rating</mat-label>
-          <mat-select [field]="recipeForm.tasteRating">
+          <mat-select [(ngModel)]="tasteRating">
+            <mat-select-trigger>
+              <div class="flex items-center">
+                @for (star of (tasteRating | range); track star) {
+                  <mat-icon class="!text-yellow-400 text-sm">star</mat-icon>
+                }
+              </div>
+            </mat-select-trigger>
             @for (rating of (5 | range); track rating) {
               <mat-option [value]="rating">
                 @for (stars of (rating | range); track stars) {
@@ -78,7 +88,14 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
 
         <mat-form-field class="col-span-1">
           <mat-label>Effort Rating</mat-label>
-          <mat-select [field]="recipeForm.effortRating">
+          <mat-select [(ngModel)]="effortRating">
+            <mat-select-trigger>
+              <div class="flex items-center">
+                @for (star of (effortRating | range); track star) {
+                  <mat-icon class="!text-yellow-400 text-sm">star</mat-icon>
+                }
+              </div>
+            </mat-select-trigger>
             @for (rating of (5 | range); track rating) {
               <mat-option [value]="rating">
                 @for (stars of (rating | range); track stars) {
@@ -91,7 +108,14 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
 
         <mat-form-field class="col-span-1">
           <mat-label>Health Rating</mat-label>
-          <mat-select [field]="recipeForm.healthyRating">
+          <mat-select [(ngModel)]="healthyRating">
+            <mat-select-trigger>
+              <div class="flex items-center">
+                @for (star of (healthyRating | range); track star) {
+                  <mat-icon class="!text-yellow-400 text-sm">star</mat-icon>
+                }
+              </div>
+            </mat-select-trigger>
             @for (rating of (5 | range); track rating) {
               <mat-option [value]="rating">
                 @for (stars of (rating | range); track stars) {
@@ -126,7 +150,7 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
             </mat-select>
           </mat-form-field>
 
-          <button mat-icon-button class="mx-4 mb-4" (click)="addIngredient()">
+          <button mat-icon-button class="mx-2 mb-4" (click)="addIngredient()">
             <mat-icon>add</mat-icon>
           </button>
         </div>
@@ -149,7 +173,7 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
             </textarea>
           </mat-form-field>
 
-          <button mat-icon-button class="mx-4 mb-4" (click)="addInstruction()">
+          <button mat-icon-button class="mx-2 mb-4" (click)="addInstruction()">
             <mat-icon>add</mat-icon>
           </button>
         </div>
@@ -162,11 +186,16 @@ import {IngredientTextPipe} from '../pipes/ingredient-text';
         </div>
       </section>
 
+      <button matButton="filled" class="ml-auto mr-4" (click)="addRecipe()">
+        Create Recipe
+      </button>
     </div>
   `,
   styles: ``,
 })
 export class RecipeForm {
+  drawer = input.required<MatDrawer>();
+
   readonly RecipeType = RecipeType
   readonly recipeTypes = Object.values(RecipeType)
     .filter(value => typeof value === 'number');
@@ -176,6 +205,13 @@ export class RecipeForm {
     .filter(value => typeof value === 'number');
 
   // Form fields
+  recipeName: string = '';
+  recipeType: RecipeType = RecipeType.Food;
+  serves: number = 0;
+  duration: number = 0;
+  tasteRating: number = 1;
+  effortRating: number = 1;
+  healthyRating: number = 1;
   ingredientName: string = '';
   ingredientQuantity: number = 0;
   ingredientUnit: Unit = Unit.grams;
@@ -184,19 +220,6 @@ export class RecipeForm {
 
   ingredients = signal<Ingredient[]>([])
   instructions = signal<Instruction[]>([])
-  recipeModel = signal<Recipe>({
-    id: 0,
-    duration: 0,
-    ingredients: [],
-    instructions: [],
-    name: '',
-    type: RecipeType.Food,
-    serves: 1,
-    healthyRating: 0,
-    tasteRating: 0,
-    effortRating: 0
-  });
-  recipeForm = form(this.recipeModel);
 
   addIngredient() {
     this.ingredients.update(current => [...current, {
@@ -227,6 +250,16 @@ export class RecipeForm {
   }
 
   addRecipe() {
-    console.log(this.recipeForm, this.ingredients(), this.instructions());
+    console.log({
+      recipeName: this.recipeName,
+      recipeType: this.recipeType,
+      serves: this.serves,
+      duration: this.duration,
+      tasteRating: this.tasteRating,
+      effortRating: this.effortRating,
+      healthyRating: this.healthyRating,
+      ingredients: this.ingredients(),
+      instructions: this.instructions(),
+    });
   }
 }

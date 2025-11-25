@@ -1,4 +1,4 @@
-import {Component, signal} from '@angular/core';
+import {Component, computed, signal} from '@angular/core';
 import {RecipeControls} from '../components/recipe-controls';
 import {RecipeType} from '../models/recipe-type';
 import {Recipe as RecipeModel} from '../models/recipe';
@@ -8,6 +8,8 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {Recipe} from '../components/recipe';
 import {RecipeForm} from '../components/recipe-form';
 import {Unit} from '../../../shared/models/unit';
+import {RecipeTypePipe} from '../pipes/recipe-type';
+import {enumValues} from '../../../shared/utils/enum-helpers';
 
 @Component({
   selector: 'app-recipes',
@@ -26,7 +28,7 @@ import {Unit} from '../../../shared/models/unit';
         position="start"
         class="!w-9/12"
       >
-        <app-recipe-form/>
+        <app-recipe-form [drawer]="addDrawer"/>
       </mat-drawer>
       <mat-drawer
         #recipeDrawer
@@ -43,12 +45,12 @@ import {Unit} from '../../../shared/models/unit';
       <mat-drawer-content>
         <app-recipe-controls
           (addClicked)="addDrawer.open()"
-          (searchChanged)="updateSearchFilter($event)"
-          (recipeTypesChanged)="updateTypesFilter($event)"
+          (searchChanged)="currentSearchFilter.set($event)"
+          (recipeTypesChanged)="currentTypesFilter.set($event)"
         />
 
         <app-data-table
-          [tableData]="SAMPLE_DATA"
+          [tableData]="filteredRecipes()"
           [columnDefinition]="columnDefinition"
           (rowClicked)="selectedRecipe.set($event)"
         />
@@ -58,7 +60,7 @@ import {Unit} from '../../../shared/models/unit';
   styles: ``,
 })
 export default class Recipes {
-  SAMPLE_DATA: RecipeModel[] = [
+  readonly SAMPLE_DATA: RecipeModel[] = [
     {
       id: 0,
       name: "Paella",
@@ -100,10 +102,52 @@ export default class Recipes {
         { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
         { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
       ]
+    },
+    {
+      id: 0,
+      name: "Doughnuts",
+      type: RecipeType.Snack,
+      duration: 30,
+      effortRating: 2,
+      healthyRating: 3,
+      tasteRating: 5,
+      serves: 3,
+      instructions: [
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+      ],
+      ingredients: [
+        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
+        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
+        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
+      ]
+    },
+    {
+      id: 0,
+      name: "Espresso Martini",
+      type: RecipeType.Drink,
+      duration: 30,
+      effortRating: 2,
+      healthyRating: 3,
+      tasteRating: 5,
+      serves: 3,
+      instructions: [
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+        { id: 0, text: 'Cook the stuff' },
+      ],
+      ingredients: [
+        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
+        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
+        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
+      ]
     }
   ];
   readonly columnDefinition: ColumnDefinitionMap = {
-    type: new ColumnDefinition('Type'),
+    type: new ColumnDefinition('Type', { type: ColumnDefinitionType.pipe, pipe: RecipeTypePipe }),
     name: new ColumnDefinition('Name'),
     serves: new ColumnDefinition('Serves'),
     duration: new ColumnDefinition('Duration (minutes)'),
@@ -112,17 +156,21 @@ export default class Recipes {
     healthyRating: new ColumnDefinition("Healthy", { type: ColumnDefinitionType.rating }),
   };
 
+  currentSearchFilter = signal<string>('');
+  currentTypesFilter = signal<RecipeType[]>(enumValues(RecipeType));
+  filteredRecipes = computed(() => {
+    const recipes = this.SAMPLE_DATA;
+
+    const words = this.currentSearchFilter()
+      .toLowerCase()
+      .split(' ')
+      .filter(w => w.length > 0);
+
+    return recipes.filter(recipe => {
+      const activeType = this.currentTypesFilter().includes(recipe.type);
+      return words.every(word => recipe.name.toLowerCase().includes(word)) && activeType;
+    });
+  });
+
   selectedRecipe = signal<RecipeModel | undefined>(undefined);
-
-  addRecipe() {
-
-  }
-
-  updateSearchFilter(value: string) {
-
-  }
-
-  updateTypesFilter(types: RecipeType[]) {
-
-  }
 }
