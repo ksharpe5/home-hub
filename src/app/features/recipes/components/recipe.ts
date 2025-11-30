@@ -1,7 +1,7 @@
-import {Component, input} from '@angular/core';
-import { Recipe as RecipeModel } from '../models/recipe';
+import {Component, input, output} from '@angular/core';
+import {Recipe as RecipeModel} from '../models/recipe';
 import {MatIconModule} from '@angular/material/icon';
-import {MatIconButton} from '@angular/material/button';
+import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatDrawer} from '@angular/material/sidenav';
 import {UnitPipe} from '../../../shared/pipes/unit';
 
@@ -10,6 +10,7 @@ import {UnitPipe} from '../../../shared/pipes/unit';
   imports: [
     MatIconModule,
     MatIconButton,
+    MatButton,
     UnitPipe
   ],
   template: `
@@ -55,6 +56,10 @@ import {UnitPipe} from '../../../shared/pipes/unit';
         </div>
       </div>
 
+      <div class="flex mt-4 gap-2 justify-end">
+        <button matButton="filled" (click)="drawer().close(); update.emit(recipe())">Update</button>
+        <button matButton="filled" (click)="delete.emit(recipe())">Delete</button>
+      </div>
     </div>
   `,
   styles: ``,
@@ -62,4 +67,7 @@ import {UnitPipe} from '../../../shared/pipes/unit';
 export class Recipe {
   drawer = input.required<MatDrawer>();
   recipe = input.required<RecipeModel>();
+
+  update = output<RecipeModel>();
+  delete = output<RecipeModel>();
 }

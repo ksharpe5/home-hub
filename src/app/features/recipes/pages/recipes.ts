@@ -1,15 +1,17 @@
-import {Component, computed, signal} from '@angular/core';
+import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {RecipeControls} from '../components/recipe-controls';
 import {RecipeType} from '../models/recipe-type';
 import {Recipe as RecipeModel} from '../models/recipe';
 import {DataTable} from '../../../shared/components/data-table';
 import {ColumnDefinition, ColumnDefinitionMap, ColumnDefinitionType} from '../../../shared/models/column-definition';
-import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatDrawer, MatSidenavModule} from '@angular/material/sidenav';
 import {Recipe} from '../components/recipe';
 import {RecipeForm} from '../components/recipe-form';
-import {Unit} from '../../../shared/models/unit';
 import {RecipeTypePipe} from '../pipes/recipe-type';
 import {enumValues} from '../../../shared/utils/enum-helpers';
+import {RecipeService} from '../services/recipe';
+import {MatDialog} from '@angular/material/dialog';
+import {ConfirmPrompt} from '../../../shared/components/confirm-prompt';
 
 @Component({
   selector: 'app-recipes',
@@ -17,19 +19,10 @@ import {enumValues} from '../../../shared/utils/enum-helpers';
     MatSidenavModule,
     RecipeControls,
     DataTable,
-    Recipe,
-    RecipeForm,
+    Recipe
   ],
   template: `
     <mat-drawer-container class="h-full" autosize>
-      <mat-drawer
-        #addDrawer
-        mode="over"
-        position="start"
-        class="!w-9/12"
-      >
-        <app-recipe-form [drawer]="addDrawer"/>
-      </mat-drawer>
       <mat-drawer
         #recipeDrawer
         mode="over"
@@ -39,12 +32,17 @@ import {enumValues} from '../../../shared/utils/enum-helpers';
         (closed)="selectedRecipe.set(undefined)"
       >
         @if (selectedRecipe() !== undefined) {
-          <app-recipe [drawer]="recipeDrawer" [recipe]="selectedRecipe()!"/>
+          <app-recipe
+            [drawer]="recipeDrawer"
+            [recipe]="selectedRecipe()!"
+            (update)="openRecipeDialog($event)"
+            (delete)="deleteRecipe($event, recipeDrawer)"
+          />
         }
       </mat-drawer>
       <mat-drawer-content>
         <app-recipe-controls
-          (addClicked)="addDrawer.open()"
+          (addClicked)="openRecipeDialog()"
           (searchChanged)="currentSearchFilter.set($event)"
           (recipeTypesChanged)="currentTypesFilter.set($event)"
         />
@@ -59,93 +57,9 @@ import {enumValues} from '../../../shared/utils/enum-helpers';
   `,
   styles: ``,
 })
-export default class Recipes {
-  readonly SAMPLE_DATA: RecipeModel[] = [
-    {
-      id: 0,
-      name: "Paella",
-      type: RecipeType.Food,
-      duration: 30,
-      effortRating: 2,
-      healthyRating: 3,
-      tasteRating: 5,
-      serves: 3,
-      instructions: [
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-      ],
-      ingredients: [
-        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
-        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
-        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
-      ]
-    },
-    {
-      id: 1,
-      name: "Steak",
-      type: RecipeType.Food,
-      duration: 15,
-      effortRating: 1,
-      healthyRating: 4,
-      tasteRating: 2,
-      serves: 2,
-      instructions: [
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-      ],
-      ingredients: [
-        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
-        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
-        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
-      ]
-    },
-    {
-      id: 0,
-      name: "Doughnuts",
-      type: RecipeType.Snack,
-      duration: 30,
-      effortRating: 2,
-      healthyRating: 3,
-      tasteRating: 5,
-      serves: 3,
-      instructions: [
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-      ],
-      ingredients: [
-        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
-        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
-        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
-      ]
-    },
-    {
-      id: 0,
-      name: "Espresso Martini",
-      type: RecipeType.Drink,
-      duration: 30,
-      effortRating: 2,
-      healthyRating: 3,
-      tasteRating: 5,
-      serves: 3,
-      instructions: [
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-        { id: 0, text: 'Cook the stuff' },
-      ],
-      ingredients: [
-        { id: 0, name: "Chicken", quantity: 200, unit: Unit.grams },
-        { id: 0, name: "Chorizo", quantity: 100, unit: Unit.grams },
-        { id: 0, name: "Paella Rice", quantity: 350, unit: Unit.grams },
-      ]
-    }
-  ];
+export default class Recipes implements OnInit {
+  readonly recipeService = inject(RecipeService)
+  readonly dialog = inject(MatDialog);
   readonly columnDefinition: ColumnDefinitionMap = {
     type: new ColumnDefinition('Type', { type: ColumnDefinitionType.pipe, pipe: RecipeTypePipe }),
     name: new ColumnDefinition('Name'),
@@ -159,7 +73,7 @@ export default class Recipes {
   currentSearchFilter = signal<string>('');
   currentTypesFilter = signal<RecipeType[]>(enumValues(RecipeType));
   filteredRecipes = computed(() => {
-    const recipes = this.SAMPLE_DATA;
+    const recipes = this.recipeService.recipes();
 
     const words = this.currentSearchFilter()
       .toLowerCase()
@@ -173,4 +87,41 @@ export default class Recipes {
   });
 
   selectedRecipe = signal<RecipeModel | undefined>(undefined);
+
+  ngOnInit() {
+    this.recipeService.getAll();
+  }
+
+  openRecipeDialog(recipe: RecipeModel | undefined = undefined) {
+    const form = this.dialog.open(RecipeForm, {
+      data: recipe,
+      maxHeight: '700px',
+      maxWidth: '800px'
+    });
+    form.afterClosed().subscribe((result: Partial<RecipeModel> | undefined) => {
+      if (result === undefined) return;
+
+      recipe === undefined ?
+        this.recipeService.create(result) :
+        this.recipeService.update(result);
+    });
+  }
+
+  createRecipe(recipe: RecipeModel) {
+    this.recipeService.create(recipe);
+  }
+
+  updateRecipe(recipe: RecipeModel) {
+    this.recipeService.update(recipe);
+  }
+
+  deleteRecipe(recipe: RecipeModel, drawer: MatDrawer) {
+    const prompt = this.dialog.open(ConfirmPrompt);
+    prompt.afterClosed().subscribe((result: boolean) => {
+      if (!result) return;
+
+      this.recipeService.delete(recipe);
+      drawer.close().then();
+    });
+  }
 }

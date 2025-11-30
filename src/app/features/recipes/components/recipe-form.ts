@@ -1,4 +1,4 @@
-import {Component, input, signal} from '@angular/core';
+import {Component, inject, input, output, signal} from '@angular/core';
 import {RecipeType} from '../models/recipe-type';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
@@ -13,7 +13,8 @@ import {Unit} from '../../../shared/models/unit';
 import {Instruction} from '../models/instruction';
 import {RecipeFormChip} from './recipe-form-chip';
 import {IngredientTextPipe} from '../pipes/ingredient-text';
-import {MatDrawer} from '@angular/material/sidenav';
+import {Recipe} from '../models/recipe';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-recipe-form',
@@ -31,12 +32,12 @@ import {MatDrawer} from '@angular/material/sidenav';
     MatButtonModule
   ],
   template: `
-    <div class="max-h-full overflow-auto flex flex-col">
+    <div class="overflow-auto flex flex-col p-4">
 
       <div class="flex justify-between">
         <h1 class="mb-2 text-lg font-bold">Recipe Info</h1>
 
-        <button matIconButton class="m-2" (click)="drawer().close()">
+        <button matIconButton class="m-2" (click)="dialogRef.close(undefined)">
           <mat-icon>close</mat-icon>
         </button>
       </div>
@@ -157,7 +158,7 @@ import {MatDrawer} from '@angular/material/sidenav';
 
         <!-- Ingredients Chips -->
         <div class="flex gap-2">
-          @for (ingredient of ingredients(); track ingredient.id) {
+          @for (ingredient of ingredients(); track $index) {
             <app-recipe-form-chip text="{{ingredient | ingredientText}}" (delete)="removeIngredient(ingredient)"/>
           }
         </div>
@@ -180,21 +181,24 @@ import {MatDrawer} from '@angular/material/sidenav';
 
         <!-- Instructions Chips -->
         <div class="flex flex-col gap-2">
-          @for (instruction of instructions(); track instruction.id) {
-            <app-recipe-form-chip [text]="instruction.text" (delete)="removeInstruction(instruction)"/>
+          @for (instruction of instructions(); track $index) {
+            <app-recipe-form-chip [text]="instruction.text!" (delete)="removeInstruction(instruction)"/>
           }
         </div>
       </section>
 
-      <button matButton="filled" class="ml-auto mr-4" (click)="addRecipe()">
-        Create Recipe
-      </button>
+      <div class="ml-auto m-4">
+        <button matButton="filled" (click)="closeWithModel()">
+          {{ data == undefined ? 'Create' : 'Update' }}
+        </button>
+      </div>
     </div>
   `,
   styles: ``,
 })
 export class RecipeForm {
-  drawer = input.required<MatDrawer>();
+  readonly dialogRef = inject(MatDialogRef<RecipeForm>);
+  readonly data: Recipe | undefined = inject(MAT_DIALOG_DATA);
 
   readonly RecipeType = RecipeType
   readonly recipeTypes = Object.values(RecipeType)
@@ -214,52 +218,71 @@ export class RecipeForm {
   healthyRating: number = 1;
   ingredientName: string = '';
   ingredientQuantity: number = 0;
-  ingredientUnit: Unit = Unit.grams;
+  ingredientUnit: Unit = Unit.grams
 
   instructionText: string = '';
 
-  ingredients = signal<Ingredient[]>([])
-  instructions = signal<Instruction[]>([])
+  ingredients = signal<Partial<Ingredient>[]>([]);
+  instructions = signal<Partial<Instruction>[]>([]);
+
+  constructor() {
+    if (this.data !== undefined) {
+      this.recipeName = this.data.name;
+      this.recipeType = this.data.type;
+      this.serves = this.data.serves;
+      this.duration = this.data.duration;
+      this.tasteRating = this.data.tasteRating;
+      this.effortRating = this.data.effortRating;
+      this.healthyRating = this.data.healthyRating;
+      this.ingredients.set(this.data.ingredients);
+      this.instructions.set(this.data.instructions);
+    }
+  }
 
   addIngredient() {
     this.ingredients.update(current => [...current, {
-        id: current.length + 1,
-        name: this.ingredientName,
-        quantity: this.ingredientQuantity,
-        unit: this.ingredientUnit
-      }]
-    );
+      recipeId: this.data?.id ?? undefined,
+      name: this.ingredientName,
+      quantity: this.ingredientQuantity,
+      unit: this.ingredientUnit,
+    }]);
   }
 
-  removeIngredient(ingredient: Ingredient) {
+  removeIngredient(ingredient: Partial<Ingredient>) {
     this.ingredients.update(current =>
-      current.filter(i => i.id !== ingredient.id)
+      current.filter(e => e !== ingredient)
     );
   }
 
   addInstruction() {
     this.instructions.update(current =>
-      [...current, { id: current.length + 1, text: this.instructionText}]
+      [...current, {
+      recipeId: this.data?.id ?? undefined,
+        text: this.instructionText
+      }]
     );
   }
 
-  removeInstruction(instruction: Instruction) {
+  removeInstruction(instruction: Partial<Instruction>) {
     this.instructions.update(current =>
-      current.filter(i => i.id !== instruction.id)
+      current.filter(e => e !== instruction)
     );
   }
 
-  addRecipe() {
-    console.log({
-      recipeName: this.recipeName,
-      recipeType: this.recipeType,
-      serves: this.serves,
-      duration: this.duration,
-      tasteRating: this.tasteRating,
-      effortRating: this.effortRating,
-      healthyRating: this.healthyRating,
-      ingredients: this.ingredients(),
-      instructions: this.instructions(),
-    });
+  closeWithModel() {
+    const newRecipe: Partial<Recipe> = {
+      id: this.data?.id ?? undefined,
+      name: this.recipeName ?? 'Undefined Name',
+      type: this.recipeType ?? RecipeType.Food,
+      serves: this.serves ?? 0,
+      duration: this.duration ?? 0,
+      tasteRating: this.tasteRating ?? 0,
+      effortRating: this.effortRating ?? 0,
+      healthyRating: this.healthyRating ?? 0,
+      ingredients: this.ingredients() as Ingredient[],
+      instructions: this.instructions() as Instruction[],
+    }
+
+    this.dialogRef.close(newRecipe);
   }
 }
