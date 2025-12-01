@@ -11,12 +11,20 @@ export class RecipeService {
   recipes = signal<Recipe[]>([]);
 
   getAll() {
-    this.api.get<Recipe[]>('recipe').subscribe(r => this.recipes.set(r));
+    this.api.get<Recipe[]>('recipe').subscribe(recipes => {
+      const sortedRecipes = recipes.map(r => ({
+        ...r,
+        ingredients: [...r.ingredients].sort((a, b) => a.sequenceNumber - b.sequenceNumber),
+        instructions: [...r.instructions].sort((a, b) => a.sequenceNumber - b.sequenceNumber)
+      }));
+
+      this.recipes.set(sortedRecipes);
+    });
   }
 
   create(data: Partial<Recipe>) {
     this.api.post<Recipe>('recipe', data).subscribe(r => {
-      this.recipes.update(list => [...list, r]);
+      this.recipes.update(list => [r, ...list]);
     });
   }
 

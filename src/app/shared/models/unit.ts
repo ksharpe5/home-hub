@@ -2,7 +2,9 @@ export enum Unit {
   grams,
   kilograms,
   millilitres,
-  unit
+  unit,
+  teaspoon,
+  tablespoon
 }
 
 export const UnitLabels: Record<Unit, string> = {
@@ -10,4 +12,6 @@ export const UnitLabels: Record<Unit, string> = {
   [Unit.kilograms]: 'kg',
   [Unit.millilitres]: 'ml',
   [Unit.unit]: 'unit',
+  [Unit.teaspoon]: 'tsp',
+  [Unit.tablespoon]: 'tbsp'
 };

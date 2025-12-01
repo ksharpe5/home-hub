@@ -12,6 +12,8 @@ import {enumValues} from '../../../shared/utils/enum-helpers';
 import {RecipeService} from '../services/recipe';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmPrompt} from '../../../shared/components/confirm-prompt';
+import {Ingredient} from '../../../shared/models/ingredient';
+import {Instruction} from '../models/instruction';
 
 @Component({
   selector: 'app-recipes',
@@ -35,6 +37,7 @@ import {ConfirmPrompt} from '../../../shared/components/confirm-prompt';
           <app-recipe
             [drawer]="recipeDrawer"
             [recipe]="selectedRecipe()!"
+            (copy)="copyRecipe($event)"
             (update)="openRecipeDialog($event)"
             (delete)="deleteRecipe($event, recipeDrawer)"
           />
@@ -58,7 +61,7 @@ import {ConfirmPrompt} from '../../../shared/components/confirm-prompt';
   styles: ``,
 })
 export default class Recipes implements OnInit {
-  readonly recipeService = inject(RecipeService)
+  readonly recipeService = inject(RecipeService);
   readonly dialog = inject(MatDialog);
   readonly columnDefinition: ColumnDefinitionMap = {
     type: new ColumnDefinition('Type', { type: ColumnDefinitionType.pipe, pipe: RecipeTypePipe }),
@@ -96,7 +99,8 @@ export default class Recipes implements OnInit {
     const form = this.dialog.open(RecipeForm, {
       data: recipe,
       maxHeight: '700px',
-      maxWidth: '800px'
+      maxWidth: '800px',
+      disableClose: true,
     });
     form.afterClosed().subscribe((result: Partial<RecipeModel> | undefined) => {
       if (result === undefined) return;
@@ -107,12 +111,38 @@ export default class Recipes implements OnInit {
     });
   }
 
-  createRecipe(recipe: RecipeModel) {
-    this.recipeService.create(recipe);
-  }
+  copyRecipe(recipe: RecipeModel) {
+    const ingredients: Partial<Ingredient>[] = [];
+    const instructions: Partial<Instruction>[] = [];
 
-  updateRecipe(recipe: RecipeModel) {
-    this.recipeService.update(recipe);
+    recipe.ingredients.forEach(i => {
+      ingredients.push({
+        name: i.name,
+        quantity: i.quantity,
+        unit: i.unit,
+        sequenceNumber: i.sequenceNumber,
+      })
+    });
+    recipe.instructions.forEach(i => {
+      instructions.push({
+        text: i.text,
+        sequenceNumber: i.sequenceNumber,
+      })
+    });
+
+    const newRecipe: Partial<RecipeModel> = {
+      name: `${recipe.name} - Copy`,
+      type: recipe.type,
+      serves: recipe.serves,
+      duration: recipe.duration,
+      tasteRating: recipe.tasteRating,
+      effortRating: recipe.effortRating,
+      healthyRating: recipe.healthyRating,
+      ingredients: ingredients as Ingredient[],
+      instructions: instructions as Instruction[]
+    };
+
+    this.recipeService.create(newRecipe);
   }
 
   deleteRecipe(recipe: RecipeModel, drawer: MatDrawer) {

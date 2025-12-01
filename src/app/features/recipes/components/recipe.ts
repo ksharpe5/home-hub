@@ -57,6 +57,7 @@ import {UnitPipe} from '../../../shared/pipes/unit';
       </div>
 
       <div class="flex mt-4 gap-2 justify-end">
+        <button matButton="filled" (click)="drawer().close(); copy.emit(recipe())">Copy</button>
         <button matButton="filled" (click)="drawer().close(); update.emit(recipe())">Update</button>
         <button matButton="filled" (click)="delete.emit(recipe())">Delete</button>
       </div>
@@ -70,4 +71,5 @@ export class Recipe {
 
   update = output<RecipeModel>();
   delete = output<RecipeModel>();
+  copy = output<RecipeModel>();
 }

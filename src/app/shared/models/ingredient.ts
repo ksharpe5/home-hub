@@ -5,5 +5,6 @@ export type Ingredient = {
   recipeId: number,
   name: string,
   quantity: number,
-  unit: Unit
+  unit: Unit,
+  sequenceNumber: number
 }

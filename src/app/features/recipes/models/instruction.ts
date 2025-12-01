@@ -1,5 +1,6 @@
 export type Instruction = {
   id: number,
   recipeId: number,
-  text: string
+  text: string,
+  sequenceNumber: number,
 }
