@@ -27,27 +27,22 @@ export class Sidebar {
     {
       name: 'Dashboard',
       icon: 'dashboard',
-      route: '/dashboard',
+      route: 'dashboard',
     },
     {
       name: 'Calendar',
       icon: 'calendar_month',
-      route: '/calendar',
+      route: 'calendar',
     },
     {
-      name: 'Inventory',
+      name: 'Products',
       icon: 'inventory',
-      route: 'inventory',
+      route: 'products',
     },
     {
       name: 'Recipes',
       icon: 'menu_book_2',
       route: 'recipes',
-    },
-    {
-      name: 'Smart Home',
-      icon: 'broadcast_on_personal',
-      route: 'smart-home',
     },
     {
       name: 'Chores',

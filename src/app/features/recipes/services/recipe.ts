@@ -9,8 +9,14 @@ export class RecipeService {
   private readonly api = inject(HomeHubApi);
 
   recipes = signal<Recipe[]>([]);
+  showLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll();
+  }
 
   getAll() {
+    this.showLoading.set(true);
     this.api.get<Recipe[]>('recipe').subscribe(recipes => {
       const sortedRecipes = recipes.map(r => ({
         ...r,
@@ -19,26 +25,34 @@ export class RecipeService {
       }));
 
       this.recipes.set(sortedRecipes);
+      this.showLoading.set(false);
     });
   }
 
   create(data: Partial<Recipe>) {
+    this.showLoading.set(true);
     this.api.post<Recipe>('recipe', data).subscribe(r => {
+      console.log(r);
       this.recipes.update(list => [r, ...list]);
+      this.showLoading.set(false);
     });
   }
 
   update(data: Partial<Recipe>) {
+    this.showLoading.set(true);
     this.api.put<Recipe>(`recipe`, data).subscribe(r => {
       this.recipes.update(list =>
         list.map(x => (x.id === data.id ? r : x))
       );
+      this.showLoading.set(false);
     });
   }
 
   delete(data: Recipe) {
+    this.showLoading.set(true);
     this.api.delete(`recipe?id=${data.id}`).subscribe(() => {
       this.recipes.update(list => list.filter(x => x.id !== data.id));
+      this.showLoading.set(false);
     });
   }
 }

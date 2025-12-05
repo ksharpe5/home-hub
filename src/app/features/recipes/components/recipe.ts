@@ -1,9 +1,11 @@
-import {Component, input, output} from '@angular/core';
+import {Component, input, OnInit, output} from '@angular/core';
 import {Recipe as RecipeModel} from '../models/recipe';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatDrawer} from '@angular/material/sidenav';
 import {UnitPipe} from '../../../shared/pipes/unit';
+import {RecipeInstructionsList} from './recipe-instructions-list';
+import {RecipeIngredientsList} from './recipe-ingredients-list';
 
 @Component({
   selector: 'app-recipe',
@@ -11,7 +13,8 @@ import {UnitPipe} from '../../../shared/pipes/unit';
     MatIconModule,
     MatIconButton,
     MatButton,
-    UnitPipe
+    RecipeInstructionsList,
+    RecipeIngredientsList
   ],
   template: `
     <div class="flex flex-col gap-2 p-4">
@@ -36,23 +39,13 @@ import {UnitPipe} from '../../../shared/pipes/unit';
       <!-- Recipe Content Left/Right -->
       <div class="flex gap-4 h-[500px]">
         <!-- Instructions -->
-        <div class="flex-[3] border rounded-2xl p-4 overflow-auto">
-          <h2 class="font-bold mb-2">Instructions</h2>
-          <ol class="list-decimal space-y-1">
-            @for (instruction of recipe().instructions; track $index) {
-              <li>{{ instruction.text }}</li>
-            }
-          </ol>
+        <div class="flex-[2] border rounded-2xl p-4 overflow-auto">
+          <app-recipe-instructions-list [instructions]="recipe().instructions" />
         </div>
 
         <!-- Ingredients -->
         <div class="flex-[1] border rounded-2xl p-4 overflow-auto">
-          <h2 class="font-bold mb-2">Ingredients</h2>
-          <ul class="space-y-1">
-            @for (ingredient of recipe().ingredients; track $index) {
-              <li>{{ ingredient.quantity }}{{ ingredient.unit | unit }} {{ ingredient.name }}</li>
-            }
-          </ul>
+            <app-recipe-ingredients-list [ingredients]="recipe().ingredients" />
         </div>
       </div>
 

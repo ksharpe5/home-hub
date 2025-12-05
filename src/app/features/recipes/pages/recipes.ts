@@ -12,8 +12,6 @@ import {enumValues} from '../../../shared/utils/enum-helpers';
 import {RecipeService} from '../services/recipe';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmPrompt} from '../../../shared/components/confirm-prompt';
-import {Ingredient} from '../../../shared/models/ingredient';
-import {Instruction} from '../models/instruction';
 
 @Component({
   selector: 'app-recipes',
@@ -51,6 +49,7 @@ import {Instruction} from '../models/instruction';
         />
 
         <app-data-table
+          [showLoading]="recipeService.showLoading()"
           [tableData]="filteredRecipes()"
           [columnDefinition]="columnDefinition"
           (rowClicked)="selectedRecipe.set($event)"
@@ -60,7 +59,7 @@ import {Instruction} from '../models/instruction';
   `,
   styles: ``,
 })
-export default class Recipes implements OnInit {
+export default class Recipes {
   readonly recipeService = inject(RecipeService);
   readonly dialog = inject(MatDialog);
   readonly columnDefinition: ColumnDefinitionMap = {
@@ -91,16 +90,12 @@ export default class Recipes implements OnInit {
 
   selectedRecipe = signal<RecipeModel | undefined>(undefined);
 
-  ngOnInit() {
-    this.recipeService.getAll();
-  }
-
   openRecipeDialog(recipe: RecipeModel | undefined = undefined) {
     const form = this.dialog.open(RecipeForm, {
       data: recipe,
-      maxHeight: '700px',
-      maxWidth: '800px',
+      minWidth: '90vw',
       disableClose: true,
+      autoFocus: false,
     });
     form.afterClosed().subscribe((result: Partial<RecipeModel> | undefined) => {
       if (result === undefined) return;
@@ -112,37 +107,37 @@ export default class Recipes implements OnInit {
   }
 
   copyRecipe(recipe: RecipeModel) {
-    const ingredients: Partial<Ingredient>[] = [];
-    const instructions: Partial<Instruction>[] = [];
-
-    recipe.ingredients.forEach(i => {
-      ingredients.push({
-        name: i.name,
-        quantity: i.quantity,
-        unit: i.unit,
-        sequenceNumber: i.sequenceNumber,
-      })
-    });
-    recipe.instructions.forEach(i => {
-      instructions.push({
-        text: i.text,
-        sequenceNumber: i.sequenceNumber,
-      })
-    });
-
-    const newRecipe: Partial<RecipeModel> = {
-      name: `${recipe.name} - Copy`,
-      type: recipe.type,
-      serves: recipe.serves,
-      duration: recipe.duration,
-      tasteRating: recipe.tasteRating,
-      effortRating: recipe.effortRating,
-      healthyRating: recipe.healthyRating,
-      ingredients: ingredients as Ingredient[],
-      instructions: instructions as Instruction[]
-    };
-
-    this.recipeService.create(newRecipe);
+    // const ingredients: Partial<Ingredient>[] = [];
+    // const instructions: Partial<Instruction>[] = [];
+    //
+    // recipe.ingredients.forEach(i => {
+    //   ingredients.push({
+    //     name: i.name,
+    //     quantity: i.quantity,
+    //     unit: i.unit,
+    //     sequenceNumber: i.sequenceNumber,
+    //   })
+    // });
+    // recipe.instructions.forEach(i => {
+    //   instructions.push({
+    //     text: i.text,
+    //     sequenceNumber: i.sequenceNumber,
+    //   })
+    // });
+    //
+    // const newRecipe: Partial<RecipeModel> = {
+    //   name: `${recipe.name} - Copy`,
+    //   type: recipe.type,
+    //   serves: recipe.serves,
+    //   duration: recipe.duration,
+    //   tasteRating: recipe.tasteRating,
+    //   effortRating: recipe.effortRating,
+    //   healthyRating: recipe.healthyRating,
+    //   ingredients: ingredients as Ingredient[],
+    //   instructions: instructions as Instruction[]
+    // };
+    //
+    // this.recipeService.create(newRecipe);
   }
 
   deleteRecipe(recipe: RecipeModel, drawer: MatDrawer) {

@@ -5,6 +5,8 @@ import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS} from '@angular/material/form-field';
 import {provideHttpClient} from '@angular/common/http';
+import {provideToastr, ToastrModule} from 'ngx-toastr';
+import {provideAnimations} from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,5 +19,7 @@ export const appConfig: ApplicationConfig = {
     }),
     { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' }},
     provideHttpClient(),
+    provideAnimations(),
+    provideToastr()
   ]
 };

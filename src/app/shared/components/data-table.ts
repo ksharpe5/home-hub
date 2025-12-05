@@ -9,6 +9,8 @@ import {RangePipe} from '../pipes/range';
 import {MatIconModule} from '@angular/material/icon';
 import {DynamicPipe} from '../pipes/dynamic';
 import {DefaultSort} from '../models/default-sort';
+import {MatIconButton} from '@angular/material/button';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-data-table',
@@ -23,8 +25,16 @@ import {DefaultSort} from '../models/default-sort';
     RangePipe,
     MatIconModule,
     DynamicPipe,
+    MatIconButton,
+    MatProgressSpinnerModule
   ],
   template: `
+    @if (showLoading()) {
+      <div class="overlay">
+        <mat-spinner [diameter]="30" [strokeWidth]="5" />
+      </div>
+    }
+
     <table mat-table [dataSource]="dataSource" matSort class="table">
       @for (columnId of columnKeys(); track columnId) {
         <ng-container [matColumnDef]="columnId">
@@ -64,6 +74,14 @@ import {DefaultSort} from '../models/default-sort';
               </td>
             }
 
+            @case (ColumnDefinitionType.iconButton) {
+              <td mat-cell *matCellDef="let row">
+                <button matIconButton (click)="$event.stopPropagation(); callback(row, columnDefs()[columnId].buttonCallback)">
+                    <mat-icon>{{ columnDefs()[columnId].icon }}</mat-icon>
+                </button>
+              </td>
+            }
+
             @default {
               <td mat-cell *matCellDef="let row">
                 {{ row[columnId] }}
@@ -78,11 +96,30 @@ import {DefaultSort} from '../models/default-sort';
       </tr>
     </table>
 
+    @if (tableData().length === 0 && !showLoading()) {
+      <p class="flex justify-center p-6">No Data Found</p>
+    }
+
     <mat-paginator [pageSizeOptions]="pageSizes()"
                    [showFirstLastButtons]="true"
                    [ngClass]="{'invisible': dataSource.data.length <= pageSizes()[0]}">
     </mat-paginator>
   `,
+  styles: `
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      pointer-events: all;
+    }
+  `
 })
 export class DataTable implements OnInit, OnChanges {
   readonly ColumnDefinitionType = ColumnDefinitionType;
@@ -92,6 +129,7 @@ export class DataTable implements OnInit, OnChanges {
   pageSizes = input<number[]>([10, 25, 50]);
   filter = input<string>('');
   defaultSort = input<DefaultSort | undefined>(undefined);
+  showLoading = input<boolean>(false);
 
   columnDefs = computed(() => this.columnDefinition());
   columnKeys = computed(() => Object.keys(this.columnDefinition()));
@@ -126,6 +164,11 @@ export class DataTable implements OnInit, OnChanges {
     if (changes['filter']) {
       this.dataSource.filter = changes['filter'].currentValue.trim().toLowerCase();
     }
+  }
+
+  callback(data: any, callbackFn: Function | undefined) {
+    if (callbackFn === undefined) return;
+    callbackFn(data);
   }
 
   private applySort(column: string, direction: 'asc' | 'desc') {

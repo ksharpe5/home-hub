@@ -1,6 +1,6 @@
 import {RecipeType} from './recipe-type';
-import {Ingredient} from '../../../shared/models/ingredient';
 import {Instruction} from './instruction';
+import {Ingredient} from './ingredient';
 
 export type Recipe = {
   id: number,

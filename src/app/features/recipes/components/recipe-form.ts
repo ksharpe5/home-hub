@@ -1,21 +1,27 @@
-import {Component, inject, signal} from '@angular/core';
-import {RecipeType} from '../models/recipe-type';
+import {Component, inject, viewChild} from '@angular/core';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
-import {RangePipe} from '../../../shared/pipes/range';
-import {MatButtonModule, MatIconButton} from '@angular/material/button';
-import {Ingredient} from '../../../shared/models/ingredient';
+import {MatButtonModule} from '@angular/material/button';
 import {MatChipsModule} from '@angular/material/chips';
-import {FormsModule} from '@angular/forms';
-import {Unit} from '../../../shared/models/unit';
-import {Instruction} from '../models/instruction';
-import {IngredientTextPipe} from '../pipes/ingredient-text';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Recipe} from '../models/recipe';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogActions,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle
+} from '@angular/material/dialog';
 import {MatStepperModule} from '@angular/material/stepper';
-import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
+import {ProductService} from '../../products/services/product';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {RecipeFormInfo} from './recipe-form-info';
+import {RecipeFormIngredients} from './recipe-form-ingredients';
+import {Ingredient} from '../models/ingredient';
+import {Instruction} from '../models/instruction';
+import {RecipeFormInstructions} from './recipe-form-instructions';
 
 @Component({
   selector: 'app-recipe-form',
@@ -25,197 +31,48 @@ import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from '@angular/cdk/d
     MatInputModule,
     MatIconModule,
     MatSelectModule,
-    RangePipe,
-    MatIconButton,
     MatChipsModule,
     FormsModule,
-    IngredientTextPipe,
     MatButtonModule,
-    CdkDropList,
-    CdkDrag
+    MatAutocompleteModule,
+    ReactiveFormsModule,
+    MatDialogActions,
+    MatDialogTitle,
+    MatDialogContent,
+    RecipeFormInfo,
+    RecipeFormIngredients,
+    RecipeFormInstructions,
   ],
   template: `
-    <div class="overflow-auto flex flex-col p-4">
-
-      <mat-stepper #stepper>
-        <mat-step>
-          <ng-template matStepLabel>Recipe Info</ng-template>
-          <section class="grid grid-cols-3 gap-2 p-2 my-4">
-            <mat-form-field class="col-span-3">
-              <mat-label>Name</mat-label>
-              <input matInput type="text" placeholder="Name..." [(ngModel)]="recipeName">
-            </mat-form-field>
-
-            <mat-form-field class="col-span-1">
-              <mat-label>Type</mat-label>
-              <mat-select [(ngModel)]="recipeType">
-                @for (type of recipeTypes; track type) {
-                  <mat-option [value]="type">{{ RecipeType[type] }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field class="col-span-1">
-              <mat-label>Serves</mat-label>
-              <input matInput type="number" placeholder="How many does it serve..." [(ngModel)]="serves">
-            </mat-form-field>
-
-            <mat-form-field class="col-span-1">
-              <mat-label>Duration (minutes)</mat-label>
-              <input matInput type="number" placeholder="How long does it take..." [(ngModel)]="duration">
-            </mat-form-field>
-
-            <mat-form-field class="col-span-1">
-              <mat-label>Taste Rating</mat-label>
-              <mat-select [(ngModel)]="tasteRating">
-                <mat-select-trigger>
-                  <div class="flex items-center">
-                    @for (star of (tasteRating | range); track star) {
-                      <mat-icon class="!text-yellow-400 text-sm">star</mat-icon>
-                    }
-                  </div>
-                </mat-select-trigger>
-                @for (rating of (5 | range); track rating) {
-                  <mat-option [value]="rating">
-                    @for (stars of (rating | range); track stars) {
-                      <mat-icon class="!text-yellow-400">star</mat-icon>
-                    }
-                  </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field class="col-span-1">
-              <mat-label>Effort Rating</mat-label>
-              <mat-select [(ngModel)]="effortRating">
-                <mat-select-trigger>
-                  <div class="flex items-center">
-                    @for (star of (effortRating | range); track star) {
-                      <mat-icon class="!text-yellow-400 text-sm">star</mat-icon>
-                    }
-                  </div>
-                </mat-select-trigger>
-                @for (rating of (5 | range); track rating) {
-                  <mat-option [value]="rating">
-                    @for (stars of (rating | range); track stars) {
-                      <mat-icon class="!text-yellow-400">star</mat-icon>
-                    }
-                  </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field class="col-span-1">
-              <mat-label>Health Rating</mat-label>
-              <mat-select [(ngModel)]="healthyRating">
-                <mat-select-trigger>
-                  <div class="flex items-center">
-                    @for (star of (healthyRating | range); track star) {
-                      <mat-icon class="!text-yellow-400 text-sm">star</mat-icon>
-                    }
-                  </div>
-                </mat-select-trigger>
-                @for (rating of (5 | range); track rating) {
-                  <mat-option [value]="rating">
-                    @for (stars of (rating | range); track stars) {
-                      <mat-icon class="!text-yellow-400">star</mat-icon>
-                    }
-                  </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </section>
-          <div class="flex gap-4 mt-6">
-            <button matButton class="ml-auto" (click)="dialogRef.close(undefined)">Cancel</button>
-            <button matButton="filled" (click)="closeWithModel()">
-              {{ data == undefined ? 'Create' : 'Update' }}
-            </button>
-          </div>
-        </mat-step>
-        <mat-step>
-          <ng-template matStepLabel>Ingredients</ng-template>
-          <div class="flex gap-2 my-4">
-            <div class="flex flex-col gap-2">
-              <mat-form-field class="flex-1">
-                <mat-label>Name</mat-label>
-                <input matInput type="text" placeholder="Name..." [(ngModel)]="ingredientName">
-              </mat-form-field>
-
-              <mat-form-field class="flex-1">
-                <mat-label>Quantity</mat-label>
-                <input matInput type="number" placeholder="How much..." [(ngModel)]="ingredientQuantity">
-              </mat-form-field>
-
-              <mat-form-field class="flex-1">
-                <mat-label>Unit</mat-label>
-                <mat-select [(ngModel)]="ingredientUnit">
-                  @for (type of unitTypes; track type) {
-                    <mat-option [value]="type">{{ Unit[type] }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <button matButton="filled" (click)="addIngredient()">
-                <mat-icon>add</mat-icon>
-                Add Ingredient
-              </button>
+    <h2 mat-dialog-title>{{ data === undefined ? 'New Recipe' : data.name }}</h2>
+    <mat-dialog-content>
+        <mat-stepper>
+          <mat-step>
+            <ng-template matStepLabel>Recipe Info</ng-template>
+            <div class="py-4">
+              <app-recipe-form-info #recipeFormInfo [recipe]="data" />
             </div>
-            <div cdkDropList class="drag-list" (cdkDropListDropped)="dropIngredient($event)">
-              @for (ingredient of ingredients(); track ingredient) {
-                <div class="drag-box" cdkDrag [cdkDragStartDelay]="200">
-                  {{ ingredient | ingredientText }}
-                  <button matIconButton (click)="removeIngredient(ingredient)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              }
+          </mat-step>
+          <mat-step>
+            <ng-template matStepLabel>Ingredients</ng-template>
+            <div class="py-4">
+                <app-recipe-form-ingredients #recipeIngredients [recipe]="data" />
             </div>
-          </div>
-          <div class="flex gap-4 mt-6">
-            <button matButton class="ml-auto" (click)="dialogRef.close(undefined)">Cancel</button>
-            <button matButton="filled" (click)="closeWithModel()">
-              {{ data == undefined ? 'Create' : 'Update' }}
-            </button>
-          </div>
-        </mat-step>
-        <mat-step>
-          <ng-template matStepLabel>Instructions</ng-template>
-
-          <div class="flex gap-2 my-4">
-            <div class="flex flex-col gap-2">
-              <mat-form-field>
-                <mat-label>Text</mat-label>
-                <textarea matInput type="text" placeholder="How to complete this step..." rows="6" [(ngModel)]="instructionText">
-                </textarea>
-              </mat-form-field>
-
-              <button matButton="filled" class="mx-2 mb-4" (click)="addInstruction()">
-                <mat-icon>add</mat-icon>
-                Add Instruction
-              </button>
+          </mat-step>
+          <mat-step>
+            <ng-template matStepLabel>Instructions</ng-template>
+            <div class="py-4">
+                <app-recipe-form-instructions #recipeInstructions [recipe]="data"/>
             </div>
-            <div cdkDropList class="drag-list" (cdkDropListDropped)="dropInstruction($event)">
-              @for (instruction of instructions(); track instruction) {
-                <div class="drag-box" cdkDrag [cdkDragStartDelay]="200">
-                  {{ instruction.text }}
-                  <button matIconButton (click)="removeInstruction(instruction)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              }
-            </div>
-          </div>
-          <div class="flex gap-4 mt-6">
-            <button matButton class="ml-auto" (click)="dialogRef.close(undefined)">Cancel</button>
-            <button matButton="filled" (click)="closeWithModel()">
-              {{ data == undefined ? 'Create' : 'Update' }}
-            </button>
-          </div>
-        </mat-step>
-      </mat-stepper>
-
-
-    </div>
+          </mat-step>
+        </mat-stepper>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+      <button matButton class="ml-auto" (click)="dialogRef.close(undefined)">Cancel</button>
+      <button matButton="filled" (click)="closeWithModel()">
+        {{ data == undefined ? 'Create' : 'Update' }}
+      </button>
+    </mat-dialog-actions>
   `,
   styles: `
     .drag-list {
@@ -259,119 +116,21 @@ import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from '@angular/cdk/d
     }`,
 })
 export class RecipeForm {
+  recipeInfo = viewChild.required<RecipeFormInfo>('recipeFormInfo');
+  recipeIngredients = viewChild.required<RecipeFormIngredients>('recipeIngredients');
+  recipeInstructions = viewChild.required<RecipeFormInstructions>('recipeInstructions');
+
   readonly dialogRef = inject(MatDialogRef<RecipeForm>);
   readonly data: Recipe | undefined = inject(MAT_DIALOG_DATA);
 
-  readonly RecipeType = RecipeType
-  readonly recipeTypes = Object.values(RecipeType)
-    .filter(value => typeof value === 'number');
-
-  readonly Unit = Unit;
-  readonly unitTypes = Object.values(Unit)
-    .filter(value => typeof value === 'number');
-
-  // Form fields
-  recipeName: string = '';
-  recipeType: RecipeType = RecipeType.Food;
-  serves: number = 0;
-  duration: number = 0;
-  tasteRating: number = 1;
-  effortRating: number = 1;
-  healthyRating: number = 1;
-  ingredientName: string = '';
-  ingredientQuantity: number = 0;
-  ingredientUnit: Unit = Unit.grams
-
-  instructionText: string = '';
-
-  ingredients = signal<Partial<Ingredient>[]>([]);
-  instructions = signal<Partial<Instruction>[]>([]);
-
-  constructor() {
-    if (this.data !== undefined) {
-      this.recipeName = this.data.name;
-      this.recipeType = this.data.type;
-      this.serves = this.data.serves;
-      this.duration = this.data.duration;
-      this.tasteRating = this.data.tasteRating;
-      this.effortRating = this.data.effortRating;
-      this.healthyRating = this.data.healthyRating;
-      this.ingredients.set(
-        [...this.data.ingredients].sort((a, b) => a.sequenceNumber - b.sequenceNumber)
-      );
-      this.instructions.set(
-        [...this.data.instructions].sort((a, b) => a.sequenceNumber - b.sequenceNumber)
-      );
-    }
-  }
-
-  addIngredient() {
-    this.ingredients.update(current => [...current, {
-      recipeId: this.data?.id ?? undefined,
-      name: this.ingredientName,
-      quantity: this.ingredientQuantity,
-      unit: this.ingredientUnit,
-    }]);
-
-    this.ingredientName = '';
-    this.ingredientQuantity = 0;
-  }
-
-  removeIngredient(ingredient: Partial<Ingredient>) {
-    this.ingredients.update(current =>
-      current.filter(e => e !== ingredient)
-    );
-  }
-
-  addInstruction() {
-    this.instructions.update(current =>
-      [...current, {
-      recipeId: this.data?.id ?? undefined,
-        text: this.instructionText
-      }]
-    );
-
-    this.instructionText = '';
-  }
-
-  removeInstruction(instruction: Partial<Instruction>) {
-    this.instructions.update(current =>
-      current.filter(e => e !== instruction)
-    );
-  }
-
-  dropIngredient(event: CdkDragDrop<Ingredient[]>) {
-    moveItemInArray(this.ingredients(), event.previousIndex, event.currentIndex);
-  }
-
-  dropInstruction(event: CdkDragDrop<Instruction[]>) {
-    moveItemInArray(this.instructions(), event.previousIndex, event.currentIndex);
-  }
-
   closeWithModel() {
-    // set the order number of each list
-    let order = 0;
-    this.ingredients().forEach((ingredient: Partial<Ingredient>) => {
-      ingredient.sequenceNumber = order++;
-    });
-
-    order = 0;
-    this.instructions().forEach((instruction: Partial<Instruction>) => {
-      instruction.sequenceNumber = order++;
-    });
-
-    const newRecipe: Partial<Recipe> = {
+    const recipe: Partial<Recipe> = {
       id: this.data?.id ?? undefined,
-      name: this.recipeName ?? 'Undefined Name',
-      type: this.recipeType ?? RecipeType.Food,
-      serves: this.serves ?? 0,
-      duration: this.duration ?? 0,
-      tasteRating: this.tasteRating ?? 0,
-      effortRating: this.effortRating ?? 0,
-      healthyRating: this.healthyRating ?? 0,
-      ingredients: this.ingredients() as Ingredient[],
-      instructions: this.instructions() as Instruction[],
-    }
-    this.dialogRef.close(newRecipe);
+      ...this.recipeInfo().getCurrentValues(),
+      ingredients: this.recipeIngredients().getCurrentValues() as Ingredient[],
+      instructions: this.recipeInstructions().getCurrentValues() as Instruction[]
+    };
+
+    this.dialogRef.close(recipe);
   }
 }

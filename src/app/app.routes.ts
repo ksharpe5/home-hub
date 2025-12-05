@@ -10,16 +10,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/calendar/pages/calendar').then(m => m.default)
   },
   {
-    path: 'inventory',
-    loadComponent: () => import('./features/inventory/pages/inventory').then(m => m.default)
+    path: 'products',
+    loadComponent: () => import('./features/products/pages/products').then(m => m.default)
   },
   {
     path: 'recipes',
     loadComponent: () => import('./features/recipes/pages/recipes').then(m => m.default)
-  },
-  {
-    path: 'smart-home',
-    loadComponent: () => import('./features/smart-home/pages/smart-home').then(m => m.default)
   },
   {
     path: 'chores',
