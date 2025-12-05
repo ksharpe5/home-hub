@@ -107,37 +107,7 @@ export default class Recipes {
   }
 
   copyRecipe(recipe: RecipeModel) {
-    // const ingredients: Partial<Ingredient>[] = [];
-    // const instructions: Partial<Instruction>[] = [];
-    //
-    // recipe.ingredients.forEach(i => {
-    //   ingredients.push({
-    //     name: i.name,
-    //     quantity: i.quantity,
-    //     unit: i.unit,
-    //     sequenceNumber: i.sequenceNumber,
-    //   })
-    // });
-    // recipe.instructions.forEach(i => {
-    //   instructions.push({
-    //     text: i.text,
-    //     sequenceNumber: i.sequenceNumber,
-    //   })
-    // });
-    //
-    // const newRecipe: Partial<RecipeModel> = {
-    //   name: `${recipe.name} - Copy`,
-    //   type: recipe.type,
-    //   serves: recipe.serves,
-    //   duration: recipe.duration,
-    //   tasteRating: recipe.tasteRating,
-    //   effortRating: recipe.effortRating,
-    //   healthyRating: recipe.healthyRating,
-    //   ingredients: ingredients as Ingredient[],
-    //   instructions: instructions as Instruction[]
-    // };
-    //
-    // this.recipeService.create(newRecipe);
+    this.recipeService.copy(recipe);
   }
 
   deleteRecipe(recipe: RecipeModel, drawer: MatDrawer) {

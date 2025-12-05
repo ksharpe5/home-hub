@@ -38,6 +38,14 @@ export class RecipeService {
     });
   }
 
+  copy(data: Recipe) {
+    this.showLoading.set(true);
+    this.api.post<Recipe>(`recipe/copy?id=${data.id}`, {}).subscribe(recipe => {
+      this.recipes.update(list => [recipe, ...list]);
+      this.showLoading.set(false);
+    })
+  }
+
   update(data: Partial<Recipe>) {
     this.showLoading.set(true);
     this.api.put<Recipe>(`recipe`, data).subscribe(r => {

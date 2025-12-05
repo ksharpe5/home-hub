@@ -1,6 +1,6 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {
-  MAT_DIALOG_DATA,
+  MAT_DIALOG_DATA, MatDialog,
   MatDialogActions,
   MatDialogClose,
   MatDialogContent, MatDialogRef,
@@ -13,7 +13,8 @@ import {MatInputModule} from '@angular/material/input';
 import {Unit} from '../../../shared/models/unit';
 import {MatSelectModule} from '@angular/material/select';
 import {UnitPipe} from '../../../shared/pipes/unit';
-import {FormsModule} from '@angular/forms';
+import {FormControl, FormsModule, isFormControl, ReactiveFormsModule} from '@angular/forms';
+import {ProductScanner} from './product-scanner';
 
 @Component({
   selector: 'app-product-dialog',
@@ -28,6 +29,7 @@ import {FormsModule} from '@angular/forms';
     MatSelectModule,
     UnitPipe,
     FormsModule,
+    ReactiveFormsModule,
   ],
   template: `
     <h2 mat-dialog-title>{{ data?.name ?? 'New Product' }}</h2>
@@ -36,17 +38,17 @@ import {FormsModule} from '@angular/forms';
       <div class="grid grid-cols-2 gap-4 py-4">
         <mat-form-field class="compact-field col-span-2">
           <mat-label>Name</mat-label>
-          <input matInput type="text" [(ngModel)]="name">
+          <input matInput type="text" [formControl]="nameFormControl">
         </mat-form-field>
 
         <mat-form-field class="compact-field col-span-1">
           <mat-label>Default Quantity</mat-label>
-          <input matInput type="number" [(ngModel)]="defaultQuantity">
+          <input matInput type="number" [formControl]="defaultQuantityFormControl">
         </mat-form-field>
 
         <mat-form-field class="compact-field col-span-1">
           <mat-label>Unit</mat-label>
-          <mat-select [(ngModel)]="unit">
+          <mat-select [formControl]="unitFormControl">
             @for (unit of unitTypes; track unit) {
               <mat-option [value]="unit">{{ unit | unit }}</mat-option>
             }
@@ -55,7 +57,7 @@ import {FormsModule} from '@angular/forms';
 
         <mat-form-field class="compact-field col-span-2">
           <mat-label>Barcode Number</mat-label>
-          <input matInput type="text" [(ngModel)]="barcode">
+          <input matInput type="text" [formControl]="barcodeFormControl">
         </mat-form-field>
       </div>
 
@@ -73,33 +75,39 @@ export class ProductDialog {
     .filter(value => typeof value === 'number');
 
   data: Product | undefined = inject(MAT_DIALOG_DATA);
+  private readonly dialog = inject(MatDialog);
   private readonly dialogRef = inject(MatDialogRef<ProductDialog>);
 
-  name: string = '';
-  unit: Unit = Unit.grams;
-  defaultQuantity: number = 0;
-  barcode: string = '';
+  nameFormControl = new FormControl('');
+  unitFormControl = new FormControl(Unit.grams);
+  defaultQuantityFormControl = new FormControl(0);
+  barcodeFormControl = new FormControl('');
 
   constructor() {
     if (this.data !== undefined) {
-      this.name = this.data.name;
-      this.unit = this.data.unit;
-      this.defaultQuantity = this.data.defaultQuantity ?? 0;
-      this.barcode = this.data.barcode ?? '';
+      this.nameFormControl.setValue(this.data.name);
+      this.unitFormControl.setValue(this.data.unit);
+      this.defaultQuantityFormControl.setValue(this.data.defaultQuantity ?? 0);
+      this.barcodeFormControl.setValue(this.data.barcode ?? '');
     }
   }
 
   activateScanner() {
+    const scanner = this.dialog.open(ProductScanner, {});
+    scanner.afterClosed().subscribe((result: string) => {
+      if (result.length <= 0) return;
 
+      this.barcodeFormControl.setValue(result);
+    });
   }
 
   closeWithModel() {
     const product: Partial<Product> = {
       id: this.data?.id ?? undefined,
-      name: this.name,
-      unit: this.unit,
-      defaultQuantity: this.defaultQuantity,
-      barcode: this.barcode,
+      name: this.nameFormControl.value ?? 'Unknown',
+      unit: this.unitFormControl.value ?? Unit.grams,
+      defaultQuantity: this.defaultQuantityFormControl.value ?? 0,
+      barcode: this.barcodeFormControl.value ?? '',
       category: this.data?.category ?? undefined
     };
 
